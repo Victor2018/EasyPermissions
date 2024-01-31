@@ -41,7 +41,7 @@ object EasyPermissions {
         fun onRationaleDenied(requestCode: Int)
     }
 
-    fun hasStoragePermission( context: Context?,): Boolean {
+    fun hasStoragePermission(context: Context?): Boolean {
         var hasWritePermission = hasPermissions(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         var hasReadPermission = hasPermissions(context, Manifest.permission.READ_EXTERNAL_STORAGE)
         var hasReadImages = hasPermissions(context, Manifest.permission.READ_MEDIA_IMAGES)
@@ -62,7 +62,30 @@ object EasyPermissions {
 
     fun requestStoragePermission(host: Activity,
                                  rationale: String,
-                                 requestCode: Int,) {
+                                 requestCode: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                host,
+                rationale,
+                requestCode,
+                Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.READ_MEDIA_AUDIO,
+                Manifest.permission.READ_MEDIA_VIDEO
+            )
+        } else {
+            requestPermissions(
+                host,
+                rationale,
+                requestCode,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        }
+    }
+
+    fun requestStoragePermission(host: Fragment,
+                                 rationale: String,
+                                 requestCode: Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(
                 host,
