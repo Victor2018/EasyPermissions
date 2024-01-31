@@ -61,12 +61,7 @@ class PermissionFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
     override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
         Log.d(TAG, getString(R.string.log_permissions_granted, requestCode, perms.size))
-
-        when(requestCode) {
-            REQUEST_CODE_RECORD_PERMISSION -> {
-                showMessage(binding.root,"you have Storage permission,you can storage things")
-            }
-        }
+        //会回调 AfterPermissionGranted注解对应方法
     }
 
     override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
@@ -95,7 +90,7 @@ class PermissionFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     private fun requestRecordPermission() {
         if (EasyPermissions.hasPermissions(context, Manifest.permission.RECORD_AUDIO)) {
             // Have permission, do the thing!
-            showMessage(binding.root,"you have Record permission,you can record audio.")
+            showMessage(binding.root,"AfterPermissionGranted you have Record permission,you can record audio.")
         } else {
             // Request one permission
             EasyPermissions.requestPermissions(

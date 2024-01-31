@@ -71,22 +71,22 @@ class MainActivity : AppCompatActivity(),OnClickListener, EasyPermissions.Permis
                     .setAction("Action", null).show()
             }
             R.id.mBtnStorage -> {
-                requestStoragePermission(v)
+                requestStoragePermission()
             }
             R.id.mBtnLocationAndContacts -> {
-                requestPermissionLocationAndContacts(v)
+                requestPermissionLocationAndContacts()
             }
             R.id.mBtnCamera -> {
-                requestPermissionCamera(v)
+                requestPermissionCamera()
             }
         }
     }
 
     @AfterPermissionGranted(REQUEST_CODE_CAMERA_PERMISSION)
-    private fun requestPermissionCamera(view: View) {
+    private fun requestPermissionCamera() {
         if (hasCameraPermission()) {
             // Have permission, do things!
-            showMessage(view,"you have Camera permission,you can take photo")
+            showMessage(binding.root,"AfterPermissionGranted you have Camera permission,you can take photo")
         } else {
             // Ask for one permission
             EasyPermissions.requestPermissions(
@@ -99,10 +99,10 @@ class MainActivity : AppCompatActivity(),OnClickListener, EasyPermissions.Permis
     }
 
     @AfterPermissionGranted(REQUEST_CODE_LOCATION_AND_CONTACTS_PERMISSION)
-    private fun requestPermissionLocationAndContacts(view: View) {
+    private fun requestPermissionLocationAndContacts() {
         if (hasLocationAndContactsPermissions()) {
             // Have permissions, do things!
-            showMessage(view,"you have Location and Contacts permissions,you can Location and get Contacts")
+            showMessage(binding.root,"AfterPermissionGranted you have Location and Contacts permissions,you can Location and get Contacts")
         } else {
             // Ask for both permissions
             EasyPermissions.requestPermissions(
@@ -116,10 +116,10 @@ class MainActivity : AppCompatActivity(),OnClickListener, EasyPermissions.Permis
 
 
     @AfterPermissionGranted(REQUEST_CODE_STORAGE_PERMISSION)
-    private fun requestStoragePermission(view: View) {
+    private fun requestStoragePermission() {
         if (hasStoragePermission(this)) {
             // Have permission, do things!
-            showMessage(view,"you have Storage permission,you can storage things")
+            showMessage(binding.root,"AfterPermissionGranted you have Storage permission,you can storage things")
         } else {
             // Ask for one permission
             EasyPermissions.requestStoragePermission(
@@ -189,17 +189,7 @@ class MainActivity : AppCompatActivity(),OnClickListener, EasyPermissions.Permis
 
     override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
         Log.d(TAG, getString(R.string.log_permissions_granted, requestCode, perms.size))
-        when(requestCode) {
-            REQUEST_CODE_STORAGE_PERMISSION -> {
-                showMessage(binding.root,"you have Storage permission,you can storage things")
-            }
-            REQUEST_CODE_LOCATION_AND_CONTACTS_PERMISSION -> {
-                showMessage(binding.root,"you have Location and Contacts permissions,you can Location and get Contacts")
-            }
-            REQUEST_CODE_CAMERA_PERMISSION -> {
-                showMessage(binding.root,"you have Camera permission,you can take photo")
-            }
-        }
+        //会回调 AfterPermissionGranted注解对应方法
     }
 
     override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
