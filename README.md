@@ -2,7 +2,7 @@
 [![Build Status][1]][2] [![Code Coverage][3]][4] [![Latest Version][5]][6] [![Android API][7]][8] [![Kotlin Weekly][9]][10] [![Android Weekly][11]][12] [![Apache License][13]][14]
 
 Kotlin version of the popular [googlesample/easypermissions](https://github.com/googlesamples/easypermissions) wrapper library to simplify basic system
-permissions logic on Android M or higher.
+permissions logic on Android M(6) to T(33).
 
 [![Logo](art/logo.png)](https://www.youtube.com/watch?v=51fX94dU7Og)
 
