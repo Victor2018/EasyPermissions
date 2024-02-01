@@ -1,5 +1,4 @@
 # EasyPermissions
-[![Build Status][1]][2] [![Code Coverage][3]][4] [![Latest Version][5]][6] [![Android API][7]][8] [![Kotlin Weekly][9]][10] [![Android Weekly][11]][12] [![Apache License][13]][14]
 
 Kotlin version of the popular [googlesample/easypermissions](https://github.com/googlesamples/easypermissions) wrapper library to simplify basic system
 permissions logic on Android M(6) to T(33).
@@ -17,10 +16,6 @@ dependencies {
     implementation 'com.github.Victor2018:easypermissions:latestVersion'
 }
 ```
-
-## Tutorial
-
-This [video tutorial](https://www.youtube.com/watch?v=51fX94dU7Og) helps and guide you regarding all the process to integrate the library to your project and configure it, thanks to [Stevdza-San](https://www.youtube.com/channel/UCYLAirIEMMXtWOECuZAtjqQ).
 
 ## Usage
 
