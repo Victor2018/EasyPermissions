@@ -1,15 +1,18 @@
 package com.cherry.permissions
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.cherry.permissions.PermissionRequestCode.REQUEST_CODE_RECORD_PERMISSION
+import com.cherry.permissions.lib.utils.PermissionRequestCode.REQUEST_CODE_RECORD_PERMISSION
+import com.cherry.permissions.lib.utils.PermissionRequestCode.REQUEST_CODE_STORAGE_PERMISSION
 import com.cherry.permissions.databinding.FragmentPermissionBinding
 import com.cherry.permissions.lib.EasyPermissions
+import com.cherry.permissions.lib.EasyPermissions.hasStoragePermission
 import com.cherry.permissions.lib.annotations.AfterPermissionGranted
 import com.cherry.permissions.lib.dialogs.SettingsDialog
 import com.google.android.material.snackbar.Snackbar
@@ -41,6 +44,7 @@ class PermissionFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
         binding.mBtnRecord.setOnClickListener {
             requestRecordPermission()
+//            requestStoragePermission()
         }
     }
 
@@ -53,6 +57,11 @@ class PermissionFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
         // EasyPermissions handles the request result.
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        EasyPermissions.onActivityResult(this,requestCode,resultCode,data)
     }
 
     // ============================================================================================
@@ -98,6 +107,21 @@ class PermissionFragment : Fragment(), EasyPermissions.PermissionCallbacks {
                 getString(R.string.permission_sms_rationale_message),
                 REQUEST_CODE_RECORD_PERMISSION,
                 Manifest.permission.RECORD_AUDIO
+            )
+        }
+    }
+
+    @AfterPermissionGranted(REQUEST_CODE_STORAGE_PERMISSION)
+    private fun requestStoragePermission() {
+        if (hasStoragePermission(context)) {
+            // Have permission, do things!
+            showMessage(binding.root,"AfterPermissionGranted you have Storage permission,you can storage things")
+        } else {
+            // Ask for one permission
+            EasyPermissions.requestStoragePermission(
+                this,
+                getString(R.string.permission_storage_rationale_message),
+                REQUEST_CODE_STORAGE_PERMISSION
             )
         }
     }

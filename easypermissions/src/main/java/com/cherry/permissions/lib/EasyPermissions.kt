@@ -3,8 +3,13 @@ package com.cherry.permissions.lib
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.os.Environment
+import android.provider.Settings
+import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.Size
 import androidx.core.app.ActivityCompat
@@ -14,6 +19,7 @@ import com.cherry.permissions.lib.annotations.AfterPermissionGranted
 import com.cherry.permissions.lib.helpers.base.PermissionsHelper
 import com.cherry.permissions.lib.models.PermissionRequest
 import com.cherry.permissions.lib.utils.AnnotationsUtils
+import com.cherry.permissions.lib.utils.PermissionRequestCode.REQUEST_CODE_STORAGE_PERMISSION
 
 /**
  * Utility to request and check System permissions for apps targeting Android M (API &gt;= 23).
@@ -49,15 +55,21 @@ object EasyPermissions {
         var hasReadVideo = hasPermissions(context, Manifest.permission.READ_MEDIA_VIDEO)
 
         var hasRWPermission = hasWritePermission && hasReadPermission
+
         var has13ReadPermission = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             has13ReadPermission = hasReadImages && hasReadAudio && hasReadVideo
         }
 
-        Log.e(TAG,"hasStoragePermission()-hasRWPermission = $hasRWPermission")
-        Log.e(TAG,"hasStoragePermission()-has13ReadPermission = $has13ReadPermission")
+        var isExternalStorageManager = false
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+            isExternalStorageManager = Environment.isExternalStorageManager()
+        }
 
-        return hasRWPermission || has13ReadPermission
+        Log.e(TAG,"hasStoragePermission()-hasRWPermission = $hasRWPermission")
+        Log.e(TAG,"hasStoragePermission()-isExternalStorageManager = $isExternalStorageManager")
+
+        return hasRWPermission || isExternalStorageManager || has13ReadPermission
     }
 
     fun requestStoragePermission(host: Activity,
@@ -71,6 +83,13 @@ object EasyPermissions {
                 Manifest.permission.READ_MEDIA_IMAGES,
                 Manifest.permission.READ_MEDIA_AUDIO,
                 Manifest.permission.READ_MEDIA_VIDEO
+            )
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+            requestPermissions(
+                host,
+                rationale,
+                requestCode,
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE
             )
         } else {
             requestPermissions(
@@ -95,6 +114,13 @@ object EasyPermissions {
                 Manifest.permission.READ_MEDIA_AUDIO,
                 Manifest.permission.READ_MEDIA_VIDEO
             )
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+            requestPermissions(
+                host,
+                rationale,
+                requestCode,
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            )
         } else {
             requestPermissions(
                 host,
@@ -103,6 +129,30 @@ object EasyPermissions {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
+        }
+    }
+
+    private fun requestManageExternalStorage(host: Activity) {
+        Log.e(TAG,"requestAndroid11StoragePermission()......")
+        try {
+            // 必须引导用户到系统设置页面
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = Uri.parse("package:${host.packageName ?: ""}")
+            host.startActivityForResult(intent,REQUEST_CODE_STORAGE_PERMISSION)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun requestManageExternalStorage(host: Fragment) {
+        Log.e(TAG,"requestAndroid11StoragePermission()......")
+        try {
+            // 必须引导用户到系统设置页面
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = Uri.parse("package:${host.activity?.packageName ?: ""}")
+            host.startActivityForResult(intent,REQUEST_CODE_STORAGE_PERMISSION)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -128,7 +178,12 @@ object EasyPermissions {
 
         context?.let {
             return perms.all { perm ->
-                ContextCompat.checkSelfPermission(it, perm) == PackageManager.PERMISSION_GRANTED
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R &&
+                    TextUtils.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE,perm)) {
+                    Environment.isExternalStorageManager()
+                } else {
+                    ContextCompat.checkSelfPermission(it, perm) == PackageManager.PERMISSION_GRANTED
+                }
             }
         } ?: run {
             throw IllegalArgumentException("Can't check permissions for null context")
@@ -152,6 +207,11 @@ object EasyPermissions {
         requestCode: Int,
         @Size(min = 1) vararg perms: String
     ) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R &&
+            requestCode == REQUEST_CODE_STORAGE_PERMISSION) {
+            requestManageExternalStorage(host)
+            return
+        }
         val request = PermissionRequest.Builder(host)
             .code(requestCode)
             .perms(perms)
@@ -172,6 +232,11 @@ object EasyPermissions {
         requestCode: Int,
         @Size(min = 1) vararg perms: String
     ) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R &&
+            requestCode == REQUEST_CODE_STORAGE_PERMISSION) {
+            requestManageExternalStorage(host)
+            return
+        }
         val request = PermissionRequest.Builder(host.context)
             .code(requestCode)
             .perms(perms)
@@ -192,6 +257,11 @@ object EasyPermissions {
         host: Fragment,
         request: PermissionRequest
     ) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R &&
+            request.code == REQUEST_CODE_STORAGE_PERMISSION) {
+            requestManageExternalStorage(host)
+            return
+        }
         // Check for permissions before dispatching the request
         if (hasPermissions(host.context, *request.perms)) {
             notifyAlreadyHasPermissions(host, request.code, request.perms)
@@ -272,6 +342,27 @@ object EasyPermissions {
                 Log.e(TAG,"onRequestPermissionsResult()......requestCode = $requestCode")
                 AnnotationsUtils.notifyAnnotatedMethods(receiver, AfterPermissionGranted::class) {
                     it.value == requestCode
+                }
+            }
+        }
+    }
+
+    @JvmStatic
+    fun onActivityResult(receiver: PermissionCallbacks,requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.e(TAG,"onActivityResult()......")
+        if (requestCode == REQUEST_CODE_STORAGE_PERMISSION) {
+            // 再次检查用户是否在设置中授予了权限
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    receiver.onPermissionsGranted(requestCode,arrayListOf(Manifest.permission.MANAGE_EXTERNAL_STORAGE))
+                    AnnotationsUtils.notifyAnnotatedMethods(receiver, AfterPermissionGranted::class) {
+                        it.value == requestCode
+                    }
+                } else {
+                    receiver.onPermissionsDenied(requestCode,arrayListOf(Manifest.permission.MANAGE_EXTERNAL_STORAGE))
+                    AnnotationsUtils.notifyAnnotatedMethods(receiver, AfterPermissionGranted::class) {
+                        it.value == requestCode
+                    }
                 }
             }
         }

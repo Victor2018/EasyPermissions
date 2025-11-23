@@ -11,9 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Toast
-import com.cherry.permissions.PermissionRequestCode.REQUEST_CODE_CAMERA_PERMISSION
-import com.cherry.permissions.PermissionRequestCode.REQUEST_CODE_LOCATION_AND_CONTACTS_PERMISSION
-import com.cherry.permissions.PermissionRequestCode.REQUEST_CODE_STORAGE_PERMISSION
+import com.cherry.permissions.lib.utils.PermissionRequestCode.REQUEST_CODE_CAMERA_PERMISSION
+import com.cherry.permissions.lib.utils.PermissionRequestCode.REQUEST_CODE_LOCATION_AND_CONTACTS_PERMISSION
+import com.cherry.permissions.lib.utils.PermissionRequestCode.REQUEST_CODE_STORAGE_PERMISSION
 import com.cherry.permissions.databinding.ActivityMainBinding
 import com.cherry.permissions.lib.EasyPermissions
 import com.cherry.permissions.lib.EasyPermissions.hasStoragePermission
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity(),OnClickListener, EasyPermissions.Permis
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
+        EasyPermissions.onActivityResult(this,requestCode,resultCode,data)
         if (requestCode == DEFAULT_SETTINGS_REQ_CODE) {
             val yes = getString(R.string.yes)
             val no = getString(R.string.no)
